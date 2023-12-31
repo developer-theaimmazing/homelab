@@ -13,5 +13,7 @@ wget https://raw.githubusercontent.com/developer-theaimmazing/homelab/main/docke
 
 mkdir mosquitto
 cd mosquitto
+mkdir config
+cd config
 wget https://raw.githubusercontent.com/developer-theaimmazing/homelab/main/mosquitto.conf
 exit
