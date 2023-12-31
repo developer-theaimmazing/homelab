@@ -1,0 +1,67 @@
+version: '3.0'
+
+services:
+  #homeassistant
+  homeassistant:
+    container_name: homeassistant
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    restart: unless-stopped
+    volumes:
+      - /opt/homelab/homeassistant/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    privileged: true
+    network_mode: host
+    depends_on:
+      - mosquitto
+  #mosquitto
+  mosquitto:
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883/tcp"
+    volumes:
+      - /opt/homelab/mosquitto/config:/mosquitto/config
+      - /opt/homelab/mosquitto/data:/mosquitto/data
+      - /opt/homelab/mosquitto/log:/mosquitto/log
+    environment:
+      - TZ=Asia/Bangkok
+    tty: true
+    stdin_open: true
+  #node-red
+  nodered:
+    container_name: nodered
+    image: nodered/node-red
+    restart: unless-stopped
+    ports:
+      - "1880:1880/tcp"
+    volumes:
+      - /opt/homelab/nodered/data:/data
+    environment:
+      - TZ=Asia/Bangkok
+    depends_on:
+      - homeassistant
+      - mosquitto
+  #vscode
+  vscode:
+    container_name: vscode
+    image: codercom/code-server
+    restart: unless-stopped
+    ports:
+      - "8443:8080"
+    volumes:
+      - /opt/homelab:/config
+      - /opt/homelab/vscode:/home/coder/.local/share/code-server
+    command: code-server --auth none --disable-telemetry /config
+  #portainer
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce
+    restart: always
+    ports:
+      - "9000:9000/tcp"
+    environment:
+      - TZ=Asia/Bangkok
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/homelab/portainer:/data
